@@ -28,7 +28,7 @@
     "publish:public": "bun run build && bun publish --access public --registry https://registry.npmjs.org",
     "publish:all": "bun run publish:private && bun run publish:public"
   },
-  "repository": "https://github.com/kitakitsune/bats-rpc.git",
+  "repository": "https://github.com/kitakitsune0x/bats-rpc.git",
   "license": "MIT",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
