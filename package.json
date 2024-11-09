@@ -31,7 +31,7 @@
   "repository": "https://github.com/kitakitsune/bats-rpc.git",
   "license": "MIT",
   "publishConfig": {
-    "@kitakitsune0x:registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
     "@solana/web3.js": "^1.91.1",
