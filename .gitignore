@@ -31,7 +31,7 @@ dist/
 #!.yarn/sdks
 # .yarn/unplugged
 # .yarn/build-state.yaml
-
+.npmrc
 # IDEs
 .idea/
 .vscode/
