@@ -1,6 +1,6 @@
 {
   "name": "@kitakitsune0x/bats-rpc",
-  "version": "6.6.6",
+  "version": "6.6.9",
   "description": "Load balancer for Solana RPCs with websocket support by THE BAT🦇.",
   "sideEffects": false,
   "module": "./dist/esm/index.js",
