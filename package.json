@@ -34,7 +34,6 @@
   },
   "license": "MIT",
   "publishConfig": {
-    "@kitakitsune0x:registry": "https://npm.pkg.github.com",
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
