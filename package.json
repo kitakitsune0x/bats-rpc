@@ -1,5 +1,5 @@
 {
-  "name": "@kitakitsune0x/bats-rpc",
+  "name": "@kitakitsune/bats-rpc",
   "version": "6.6.6",
   "description": "Load balancer for Solana RPCs with websocket support by THE BAT🦇.",
   "sideEffects": false,
@@ -28,7 +28,7 @@
     "publish:public": "bun run build && bun publish --access public --registry https://registry.npmjs.org",
     "publish:all": "bun run publish:private && bun run publish:public"
   },
-  "repository": "https://github.com/kitakitsune0x/bats-rpc.git",
+  "repository": "https://github.com/kitakitsune/bats-rpc.git",
   "license": "MIT",
   "publishConfig": {
     "@kitakitsune0x:registry": "https://npm.pkg.github.com"

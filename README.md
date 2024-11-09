@@ -8,7 +8,7 @@ Intelligent transport layer for Solana RPCs that handles load balancing, rate li
 Smart RPC is a proxy to the existing Connection class with added websocket support, so migrating should be very simple. Under the hood, when you make requests, it proxies to underlying logic that determines which transport to send your request to.
 
 ```tsx
-import { defaultTransportConfig, TransportConfig } from "@kitakitsune0x/bats-rpc"
+import { defaultTransportConfig, TransportConfig } from "@kitakitsune/bats-rpc"
 
 let defaultTransportConfig: TransportConfig[] = [
   {
