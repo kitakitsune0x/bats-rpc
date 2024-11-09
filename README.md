@@ -2,7 +2,6 @@
 
 Intelligent transport layer for Solana RPCs that handles load balancing, rate limit throttling, failover, fanouts, retries, and websocket connections. Built on top of [@solana/web3.js](https://www.npmjs.com/package/@solana/web3.js).
 
-
 # Getting Started
 
 Smart RPC is a proxy to the existing Connection class with added websocket support, so migrating should be very simple. Under the hood, when you make requests, it proxies to underlying logic that determines which transport to send your request to.
@@ -115,4 +114,4 @@ If a particular transport reaches an error threshold within a short period of ti
 
 # Known Limitations
 
-Smart RPC provides full websocket subscription support through standard Solana websocket endpoints. For HTTP RPC requests that require strict consistency across nodes, we recommend using the `minimumContextSlot` parameter to ensure responses are from up-to-date nodes.
+Smart RPC provides full websocket subscription support through standard Solana websocket endpoints. For HTTP RPC requests that require strict consistency across nodes, I recommend using the `minimumContextSlot` parameter to ensure responses are from up-to-date nodes.
