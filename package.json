@@ -1,5 +1,5 @@
 {
-  "name": "@kitakitsune/bats-rpc",
+  "name": "@kitakitsune0x/bats-rpc",
   "version": "6.6.6",
   "description": "Load balancer for Solana RPCs with websocket support by THE BAT🦇.",
   "sideEffects": false,
