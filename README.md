@@ -9,7 +9,7 @@ Intelligent transport layer for Solana RPCs that handles load balancing, rate li
 Smart RPC is a proxy to the existing Connection class, so migrating should be very simple. Under the hood, when you make requests, it proxies to underlying logic that determines which transport to send your request to.
 
 ```tsx
-import { TransportManager, TransportConfig } from "@tensor-hq/smart-rpc";
+
 
 let defaultTransportConfig: TransportConfig[] = [
   {
