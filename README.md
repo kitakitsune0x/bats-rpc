@@ -1,15 +1,14 @@
 # Solana Smart RPC
 
-Intelligent transport layer for Solana RPCs that handles load balancing, rate limit throttling, failover, fanouts, and retries. Built on top of [@solana/web3.js](https://www.npmjs.com/package/@solana/web3.js).
+Intelligent transport layer for Solana RPCs that handles load balancing, rate limit throttling, failover, fanouts, retries, and websocket connections. Built on top of [@solana/web3.js](https://www.npmjs.com/package/@solana/web3.js).
 
-![smart rpc metrics dashboard](https://i.ibb.co/yg9rQL9/Screenshot-2024-02-06-at-12-59-53-PM.png)
 
 # Getting Started
 
-Smart RPC is a proxy to the existing Connection class, so migrating should be very simple. Under the hood, when you make requests, it proxies to underlying logic that determines which transport to send your request to.
+Smart RPC is a proxy to the existing Connection class with added websocket support, so migrating should be very simple. Under the hood, when you make requests, it proxies to underlying logic that determines which transport to send your request to.
 
 ```tsx
-
+import { defaultTransportConfig, TransportConfig } from "@kitakitsune0x/bats-rpc"
 
 let defaultTransportConfig: TransportConfig[] = [
   {
@@ -21,6 +20,7 @@ let defaultTransportConfig: TransportConfig[] = [
     enableSmartDisable: true,
     enableFailover: true,
     maxRetries: 2,
+    wsEndpoint: TRITON_MAINNET_WS
   },
   {
     rateLimit: 50,
@@ -31,6 +31,7 @@ let defaultTransportConfig: TransportConfig[] = [
     enableSmartDisable: true,
     enableFailover: true,
     maxRetries: 2,
+    wsEndpoint: HELIUS_FE_MAINNET_P0
   },
 ];
 
@@ -56,7 +57,35 @@ console.log(resp.blockhash.toString());
 
 ## Smart connection
 
-This is the recommended connection for most cases. It's a drop-in replacement for the existing Connection class within built-in features such as load balancing, failover, and retries.
+This is the recommended connection for most cases. It's a drop-in replacement for the existing Connection class with built-in features such as load balancing, failover, retries and websocket support.
+
+## Websocket connection
+
+For real-time updates and subscriptions, Smart RPC provides websocket support through the standard Solana websocket endpoints. You can subscribe to account changes, logs, program updates and more:
+
+```typescript
+const ws = new WebSocket(WSS_ENDPOINT);
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'programSubscribe',
+    params: [
+      programId,
+      {
+        encoding: 'base64',
+        commitment: 'finalized'
+      }
+    ]
+  }));
+};
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received update:', data);
+};
+```
 
 ## Fanout connection
 
@@ -86,4 +115,4 @@ If a particular transport reaches an error threshold within a short period of ti
 
 # Known Limitations
 
-Smart RPC doesn't support subscription endpoints, such as `onSlotUpdate`. Smart RPC is a proxy to underlying connections, and doesn't maintain long-lived connections. We recommend using the Connection class directly for subscription endpoints.
+Smart RPC provides full websocket subscription support through standard Solana websocket endpoints. For HTTP RPC requests that require strict consistency across nodes, we recommend using the `minimumContextSlot` parameter to ensure responses are from up-to-date nodes.

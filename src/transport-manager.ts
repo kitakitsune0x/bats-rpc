@@ -6,15 +6,11 @@ import {
 import Redis, { Cluster } from "ioredis";
 import { Connection, ConnectionConfig, PublicKey } from "@solana/web3.js";
 
-// Ideas:
-// - modify weight based on "closeness" to user. For example, first ping each provider and weight by response time.
-// - have default in code as a fallback in case our "remote config" doesn't load properly
-
 export const ERROR_THRESHOLD = 20;
-const ERROR_RESET_MS = 60000; // 60 seconds
-const DISABLED_RESET_MS = 60000; // 60 seconds
-const BASE_RETRY_DELAY = 500; // Base delay for the first retry in milliseconds
-const MAX_RETRY_DELAY = 3000; // Maximum delay in milliseconds
+const ERROR_RESET_MS = 60000;
+const DISABLED_RESET_MS = 60000;
+const BASE_RETRY_DELAY = 500;
+const MAX_RETRY_DELAY = 3000;
 const DEFAULT_TIMEOUT_MS = 5000;
 const KEY_PREFIX = "smart-rpc-rate-limit";
 const DEFAULT_RATE_LIMITER_QUEUE_SIZE = 500;
@@ -175,7 +171,6 @@ export class TransportManager {
     return values;
   };
 
-  // Updates the list of transports based on the new configuration
   updateTransports(newTransports: TransportConfig[]): void {
     this.transports = newTransports.map((config) =>
       this.createTransport(config)
@@ -198,7 +193,6 @@ export class TransportManager {
     this.strictPriorityMode = false;
   }
 
-  // Creates a transport object from configuration
   private createTransport(config: TransportConfig): Transport {
     if (config.id === "" || config.id.includes(" ")) {
       throw new Error(
@@ -208,7 +202,6 @@ export class TransportManager {
 
     let rateLimiter: RateLimiterRedis | RateLimiterMemory;
 
-    // Create a rateLimiter per transport so we can have separate rate limits.
     if (config.redisClient) {
       rateLimiter = new RateLimiterRedis({
         storeClient: config.redisClient,
@@ -271,10 +264,8 @@ export class TransportManager {
     }
   }
 
-  // Selects a transport based on their weights
   selectTransport(availableTransports: Transport[]): Transport {
     if (this.strictPriorityMode) {
-      // Find and return the transport with the highest weight
       return availableTransports.reduce((max, transport) =>
         max.transportConfig.weight > transport.transportConfig.weight
           ? max
@@ -282,7 +273,6 @@ export class TransportManager {
       );
     }
 
-    // Default weighted load balancing logic
     let totalWeight = availableTransports.reduce(
       (sum, t) => sum + t.transportConfig.weight,
       0
@@ -296,7 +286,6 @@ export class TransportManager {
       }
     }
 
-    // Fallback to the first transport in case of rounding errors.
     return availableTransports[0];
   }
 
@@ -370,10 +359,8 @@ export class TransportManager {
 
       return result;
     } catch (error: any) {
-      // Timeout exception
       let timedOut = error instanceof TimeoutError;
 
-      // Regex to find underlying error code in string.
       let match = error.message?.match(/"code"\s*:\s*(\d+)/);
 
       const currentTime = Date.now();
@@ -392,7 +379,6 @@ export class TransportManager {
             (match ? parseInt(match[1]) : null),
       });
 
-      // Reset error count if enough time has passed
       if (
         currentTime - transport.transportState.lastErrorResetTime >=
         ERROR_RESET_MS
@@ -403,7 +389,6 @@ export class TransportManager {
 
       transport.transportState.errorCount++;
 
-      // Check if the error count exceeds a certain threshold
       if (
         transport.transportState.errorCount > ERROR_THRESHOLD &&
         transport.transportConfig.enableSmartDisable
@@ -421,14 +406,12 @@ export class TransportManager {
     methodName,
     ...args
   ): Promise<any> {
-    // Ensure that the queue exists for this transport
     if (!transport.transportState.rateLimiterQueue) {
       throw new Error(
         "RateLimiterQueue is not initialized for this transport."
       );
     }
 
-    // If queue is full, promise is rejected.
     await transport.transportState.rateLimiterQueue.removeTokens(1);
 
     return await this.sendRequest(transport, methodName, ...args);
@@ -449,7 +432,6 @@ export class TransportManager {
       } catch (error: any) {
         let match = error.message?.match(/"code"\s*:\s*(\d+)/);
 
-        // Throw error if max retry attempts has been reached
         if (attempt === transport.transportConfig.maxRetries) {
           if (
             error.statusCode === 429 ||
@@ -468,7 +450,6 @@ export class TransportManager {
           throw error;
         }
 
-        // Exponential backoff
         let delay = Math.min(
           MAX_RETRY_DELAY,
           BASE_RETRY_DELAY * Math.pow(2, attempt)
@@ -478,8 +459,6 @@ export class TransportManager {
     }
   }
 
-  // Smart transport function that selects a transport based on weight and checks for rate limit.
-  // It includes a retry mechanism with exponential backoff for handling HTTP 429 (Too Many Requests) errors.
   async smartTransport(methodName, ...args): Promise<any[]> {
     let availableTransports = this.availableTransportsForMethod(methodName);
     let recentError: any = null;
@@ -488,7 +467,6 @@ export class TransportManager {
       const transport = this.selectTransport(availableTransports);
 
       if (transport.transportState.disabled) {
-        // Check if transport should be re-enabled after cooloff period.
         if (
           Date.now() - transport.transportState.disabledTime >=
           DISABLED_RESET_MS
@@ -496,7 +474,6 @@ export class TransportManager {
           transport.transportState.disabled = false;
           transport.transportState.disabledTime = 0;
         } else {
-          // If transport is still in cooloff period, cycle to next transport.
           availableTransports = availableTransports.filter(
             (t) => t !== transport
           );
@@ -512,21 +489,16 @@ export class TransportManager {
           ...args
         );
       } catch (e) {
-        // If failover is disabled, surface the error.
         if (!transport.transportConfig.enableFailover) {
           throw e;
         }
         recentError = e;
       }
 
-      // Remove a transport with exceeded rate limit and retry with the next available one
       availableTransports = availableTransports.filter((t) => t !== transport);
     }
 
     if (!this.skipLastResortSends) {
-      // Worst case scenario, if all transports fall, try sending directly to the underlying connections.
-      // This bypasses the rate limiter and smart disable system, so it could lead to excess requests to providers.
-      // These requests also do not retry.
       let lastResortTransports = this.availableTransportsForMethod(methodName);
       for (let i = 0; i < lastResortTransports.length; i++) {
         try {
@@ -541,7 +513,6 @@ export class TransportManager {
       }
     }
 
-    // Throw error if all available transports have been tried without success
     let error =
       recentError ??
       new Error("No available transports for the requested method.");

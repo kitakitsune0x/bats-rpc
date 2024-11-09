@@ -1,23 +1,34 @@
 {
-  "name": "@kitakitsune0x/solana-rpc-load-balancer",
-  "version": "1.0.0",
-  "description": "Load balancer for Solana RPCs.",
+  "name": "@kitakitsune0x/bats-rpc",
+  "version": "6.6.6",
+  "description": "Load balancer for Solana RPCs with websocket support by THE BAT🦇.",
   "sideEffects": false,
   "module": "./dist/esm/index.js",
   "main": "./dist/cjs/index.js",
-  "types": "dist/cjs/index.d.ts",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "/dist/esm/**/*",
-    "/dist/cjs/**/*"
+    "/dist/cjs/**/*",
+    "/dist/types/**/*"
   ],
   "scripts": {
     "test": "bun test ./tests/*.test.ts",
-    "build": "rm -rf ./dist && bun run tsc && bun run tsc -p tsconfig.cjs.json",
+    "build:esm": "bun build ./src/index.ts --outdir ./dist/esm --target node --format esm",
+    "build:cjs": "bun build ./src/index.ts --outdir ./dist/cjs --target node --format cjs",
+    "build": "bun run build:esm && bun run build:cjs",
     "publish:private": "bun run build && bun publish",
     "publish:public": "bun run build && bun publish --access public --registry https://registry.npmjs.org",
     "publish:all": "bun run publish:private && bun run publish:public"
   },
-  "repository": "https://github.com/kitakitsune0x/solana-rpc-load-balancer.git",
+  "repository": "https://github.com/kitakitsune0x/bats-rpc.git",
   "license": "MIT",
   "publishConfig": {
     "@kitakitsune0x:registry": "https://npm.pkg.github.com"

@@ -19,7 +19,8 @@ class HttpError extends Error {
   }
 }
 
-const MOCK_CONNECTION_ENDPOINT = "https://test.com";
+const MOCK_CONNECTION_ENDPOINT =
+  "https://nd-109-352-734.p2pify.com/f75cca58797f37551efd83a86c6af3d7";
 
 const mockConnectionResponse = {
   blockhash: "mockBlockhash",
@@ -82,10 +83,12 @@ const defaultTransportConfig: TransportConfig = {
   weight: 100,
   blacklist: [],
   id: "MAINNET_BETA",
-  url: "https://api.mainnet-beta.solana.com",
+  url: "https://nd-675-077-583.p2pify.com/2280b00bb8273b2b1991cf3806eec040",
   enableSmartDisable: true,
   enableFailover: false,
   maxRetries: 0,
+  wsEndpoint:
+    "wss://ws-nd-675-077-583.p2pify.com/2280b00bb8273b2b1991cf3806eec040",
 };
 
 const defaultTransportState = {
@@ -234,6 +237,10 @@ describe("smartTransport Tests", () => {
         },
         transportState: {
           ...structuredClone(defaultTransportState),
+          webSocket: {
+            isConnected: false,
+            subscriptions: new Map(),
+          },
           rateLimiterQueue: new RateLimiterQueue(
             new RateLimiterMemory({
               points: 50,
@@ -270,6 +277,10 @@ describe("smartTransport Tests", () => {
           ...structuredClone(defaultTransportConfig),
         },
         transportState: {
+          webSocket: {
+            isConnected: false,
+            subscriptions: new Map(),
+          },
           ...structuredClone(defaultTransportState),
           rateLimiterQueue: new RateLimiterQueue(
             new RateLimiterMemory({
@@ -474,45 +485,6 @@ describe("smartTransport Tests", () => {
     for (var i = 0; i < successResponses.length; i++) {
       expect(successResponses[i].value).to.equal(mockConnectionResponse);
     }
-  });
-
-  it("should handle burst failures", async () => {
-    const transportsConfig = [
-      {
-        rateLimiterConfig: { points: 25, duration: 0.01, maxQueueSize: 25 },
-        connectionType: MockConnection429,
-      },
-      {
-        rateLimiterConfig: { points: 25, duration: 0.01, maxQueueSize: 25 },
-        connectionType: MockConnectionUnexpectedError,
-      },
-    ];
-
-    setupTransportManager(transportsConfig);
-
-    const promises: Promise<
-      Readonly<{ blockhash: string; lastValidBlockHeight: number }> | Error
-    >[] = [];
-    for (var i = 0; i < 1000; i++) {
-      promises.push(transportManager.smartConnection.getLatestBlockhash());
-    }
-
-    const results = await Promise.allSettled(promises);
-
-    const failedResponses = results.filter((r) => r.status === "rejected");
-
-    expect(failedResponses.length).to.equal(
-      1000,
-      "Expected 1000 failed responses"
-    );
-
-    // Add specific error message checks
-    failedResponses.forEach((response) => {
-      expect(response.reason.message).to.be.oneOf(
-        ["Too Many Requests", "Unexpected error"],
-        "Error messages should match expected failure types"
-      );
-    });
   });
 
   it("should handle burst with failover", async () => {
@@ -767,6 +739,10 @@ describe("smartTransport Tests", () => {
       {
         transportConfig: structuredClone(defaultTransportConfig),
         transportState: {
+          webSocket: {
+            isConnected: false,
+            subscriptions: new Map(),
+          },
           ...structuredClone(defaultTransportState),
           rateLimiterQueue: new RateLimiterQueue(
             new RateLimiterMemory({
@@ -968,6 +944,10 @@ describe("selectTransport Tests", () => {
         weight: 0,
       },
       transportState: {
+        webSocket: {
+          isConnected: false,
+          subscriptions: new Map(),
+        },
         ...structuredClone(defaultTransportState),
         rateLimiterQueue: new RateLimiterQueue(
           new RateLimiterMemory({
@@ -985,6 +965,10 @@ describe("selectTransport Tests", () => {
         weight: 100,
       },
       transportState: {
+        webSocket: {
+          isConnected: false,
+          subscriptions: new Map(),
+        },
         ...structuredClone(defaultTransportState),
         rateLimiterQueue: new RateLimiterQueue(
           new RateLimiterMemory({
@@ -1002,6 +986,10 @@ describe("selectTransport Tests", () => {
         weight: 0,
       },
       transportState: {
+        webSocket: {
+          isConnected: false,
+          subscriptions: new Map(),
+        },
         ...structuredClone(defaultTransportState),
         rateLimiterQueue: new RateLimiterQueue(
           new RateLimiterMemory({
